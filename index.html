@@ -1,0 +1,208 @@
+root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/feed.html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Vertical | Global Hub v.38</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --accent: #00a2ff; --glass: rgba(255, 255, 255, 0.07); --border: rgba(255, 255, 255, 0.12); }
+        body, html { margin: 0; padding: 0; min-height: 100vh; font-family: 'Inter', sans-serif; color: #fff; background: #000; overflow-x: hidden; }
+
+        /* Splash Screen */
+        #splash { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
+        .loader { width: 40px; height: 40px; border: 2px solid var(--glass); border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Background */
+        .bg { position: fixed; inset: 0; background: url('https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=2048') center/cover; z-index: -2; filter: brightness(0.15); }
+        .overlay { position: fixed; inset: 0; background: radial-gradient(circle, transparent 10%, rgba(0,0,0,0.98) 100%); z-index: -1; }
+
+        /* Layout */
+        .wrapper { display: flex; flex-direction: column; min-height: 100vh; }
+        #main-app { display: flex; flex: 1; transition: 0.5s ease; opacity: 0; overflow: hidden; }
+        .glass { background: var(--glass); backdrop-filter: blur(40px); border: 1px solid var(--border); }
+
+        /* Sidebars */
+        .sidebar { width: 280px; display: flex; flex-direction: column; gap: 10px; padding: 20px; flex-shrink: 0; overflow-y: auto; scrollbar-width: none; }
+        .content { flex: 1; padding: 25px; overflow-y: auto; background: rgba(0,0,0,0.3); scrollbar-width: none; }
+
+        /* Cards */
+        .nav-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 15px; border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .nav-card:hover { border-color: var(--accent); background: rgba(0,162,255,0.1); transform: translateX(4px); }
+        .section-tag { font-size: 9px; color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin: 10px 0 5px 5px; display: block; }
+
+        /* Chat Window */
+        #chat-window { flex: 1; overflow-y: auto; font-size: 13px; margin-bottom: 10px; scrollbar-width: none; display: flex; flex-direction: column; gap: 10px; }
+        .bot-msg { color: var(--accent); border-left: 2px solid var(--accent); padding-left: 10px; line-height: 1.4; background: rgba(0,162,255,0.05); padding: 8px 10px; border-radius: 0 8px 8px 0; }
+        .user-msg { color: #fff; opacity: 0.8; text-align: right; background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 8px 8px 0 8px; align-self: flex-end; max-width: 80%; }
+        .chat-input { background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 12px; border-radius: 10px; color: #fff; width: 100%; box-sizing: border-box; outline: none; }
+
+        /* Footer */
+        footer { height: 50px; background: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; opacity: 0.6; border-top: 1px solid var(--border); flex-shrink: 0; }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            #main-app { flex-direction: column; overflow-y: auto; }
+            .sidebar { width: 100%; border: none; border-bottom: 1px solid var(--border); height: auto; }
+            .content { overflow: visible; }
+        }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+        .wide { grid-column: 1 / -1; }
+        .btn-mini { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 11px; flex: 1; min-width: 100px; text-align: center; }
+        .btn-mini:hover { background: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div id="splash">
+    <div class="loader"></div>
+    <h2 style="letter-spacing: 5px;">VERTICAL</h2>
+</div>
+
+<div class="bg"></div>
+<div class="overlay"></div>
+
+<div class="wrapper">
+    <div id="main-app">
+        <aside class="sidebar glass">
+            <span class="section-tag">Socials</span>
+            <div class="nav-card" onclick="window.open('https://www.tiktok.com', '_blank')"><i class="fa-brands fa-tiktok"></i> TikTok</div>
+            <div class="nav-card" onclick="window.open('https://tango.me', '_blank')"><i class="fa-solid fa-video"></i> Tango Video</div>
+            <div class="nav-card" onclick="window.open('https://twitch.tv', '_blank')"><i class="fa-brands fa-twitch"></i> Twitch TV</div>
+            <div class="nav-card" onclick="window.open('https://chatroulette.com', '_blank')"><i class="fa-solid fa-sync"></i> Chat Roulette</div>
+
+            <span class="section-tag">Admin Help</span>
+            <div class="nav-card" style="background: rgba(0,162,255,0.05); cursor: default;">
+                <input type="text" id="tg_msg" class="chat-input" placeholder="Message to Admin...">
+                <button onclick="sendTelegram()" style="margin-top:8px; width:100%; padding:10px; border-radius:8px; border:none; background:var(--accent); color:#fff; font-weight:bold; cursor:pointer;">SEND TO TG</button>
+            </div>
+        </aside>
+
+        <main class="content">
+            <div class="info-grid">
+                <div class="nav-card wide" style="border: 1px dashed var(--accent); text-align: center; padding: 30px;" onclick="window.open('https://buy.stripe.com/28E7sL66L3CMc6k6NfaZi00', '_blank')">
+                    <span class="section-tag">Support</span>
+                    <h2 style="margin: 5px 0;">Stripe Donation (10 USD)</h2>
+                    <p style="font-size: 13px; opacity: 0.7;">Keep our global multimedia infrastructure alive.</p>
+                </div>
+
+                <div class="nav-card wide" style="background: linear-gradient(135deg, #00a2ff, #0044ff); border: none; padding: 30px; text-align: center; position: relative; overflow: hidden;" onclick="window.open('chat.html', '_blank')">
+                    <div style="position: absolute; top: -10px; right: -10px; opacity: 0.1;">
+                        <i class="fa-solid fa-comments fa-10x"></i>
+                    </div>
+                    <span class="section-tag" style="color: #fff; opacity: 0.8;">Live Connection</span>
+                    <h2 style="margin: 10px 0; font-size: 24px;">GLOBAL VERTICAL REAL CHAT</h2>
+                    <p style="font-size: 14px; opacity: 0.9;">Общайся с пользователями со всего мира в реальном времени.</p>
+                    <button class="btn-send" style="background: #fff; color: #0044ff; font-weight: 900; margin-top: 15px; padding: 12px 40px; border-radius: 50px;">ВОЙТИ В ЧАТ <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+
+                <div class="nav-card wide" style="background: linear-gradient(90deg, #1a1a1a, #450000); border-color: #e50914;">
+                    <span class="section-tag" style="color:#e50914;">Rezka & Kinogo 2026</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                        <div class="btn-mini" onclick="window.open('https://rezka-ua.tv/page/284/', '_blank')">Rezka UA</div>
+                        <div class="btn-mini" onclick="window.open('https://hdrezka.co/', '_blank')">HD Rezka CO</div>
+                        <div class="btn-mini" onclick="window.open('https://hd-rezka.org/films/', '_blank')">HD Rezka ORG</div>
+                        <div class="btn-mini" onclick="window.open('https://kinogo.online/xfsearch/god/2026/', '_blank')">Kinogo ON</div>
+                        <div class="btn-mini" onclick="window.open('https://kinogo.ec/xfsearch/year-teg-xfsearch/2026/', '_blank')">Kinogo EC</div>
+                    </div>
+                </div>
+
+                <div class="nav-card" style="border-color: #ff9900; background: rgba(255,153,0,0.05);" onclick="window.open('https://www.amazon.pl?&tag=longlive8888-21', '_blank')">
+                    <span class="section-tag" style="color:#ff9900;">Amazon</span>
+                    <h3>Global Shopping</h3>
+                </div>
+
+                <div class="nav-card" style="border-left: 4px solid #d4af37;" onclick="window.open('https://brandfollow.pro/', '_blank')">
+                    <span class="section-tag" style="color:#d4af37;">Strategic</span>
+                    <h3>Legal Services Pro</h3>
+                </div>
+
+                <div class="nav-card" style="border-bottom: 3px solid #ff0055;" onclick="window.open('https://play.brandfollow.pro/', '_blank')">
+                    <span class="section-tag" style="color:#ff0055;">Gaming</span>
+                    <h3>CyberSport 18+</h3>
+                </div>
+                <div class="nav-card" style="border-bottom: 3px solid #00ff88;" onclick="window.open('https://longevity.brandfollow.pro/', '_blank')">
+                    <span class="section-tag" style="color:#00ff88;">Longevity</span>
+                    <h3>Health Science</h3>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar glass">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                <div style="width:8px; height:8px; background:#00ff88; border-radius:50%; box-shadow:0 0 8px #00ff88;"></div>
+                <span style="font-size:10px; font-weight:900;">VERTICAL AI ASSISTANT</span>
+            </div>
+
+            <div id="chat-window">
+                <div class="bot-msg"><b>AI:</b> Привет! Я перенастроил все панели. TikTok, Rezka и Amazon активны. О чем хочешь узнать?</div>
+            </div>
+
+            <div style="margin-top: auto;">
+                <input type="text" id="user-input" class="chat-input" placeholder="Спроси меня..." onkeypress="if(event.keyCode==13) chatBot()">
+            </div>
+        </aside>
+    </div>
+
+    <footer>
+        VERTICAL HUB | POWERED BY BRANDFOLLOW | ALL RIGHTS RESERVED © 2026
+    </footer>
+</div>
+
+<script>
+    // Плавный вход
+    window.onload = () => {
+        setTimeout(() => {
+            document.getElementById('splash').style.opacity = '0';
+            document.getElementById('main-app').style.opacity = '1';
+            setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 800);
+        }, 1500);
+    };
+
+    // Умный Чат-бот
+    function chatBot() {
+        const input = document.getElementById('user-input');
+        const win = document.getElementById('chat-window');
+        if (!input.value) return;
+
+        const val = input.value;
+        win.innerHTML += `<div class="user-msg">${val}</div>`;
+        const q = val.toLowerCase();
+        input.value = "";
+
+        setTimeout(() => {
+            let a = "Я пока только учусь, но все ссылки на сайте уже работают! Попробуй нажать на нужную панель.";
+
+            if(q.includes("резка") || q.includes("фильм") || q.includes("кино")) {
+                a = "Все зеркала Rezka (UA, CO, ORG) и Kinogo 2026 находятся в красном блоке по центру.";
+            } else if(q.includes("донат") || q.includes("stripe") || q.includes("деньги")) {
+                a = "Поддержать проект можно через Stripe (10 USD). Кнопка — самая первая в центральной ленте.";
+            } else if(q.includes("юрист") || q.includes("brandfollow") || q.includes("помощь")) {
+                a = "Наши партнеры из Brandfollow Pro предоставляют профессиональные юридические услуги. Ссылка в золотистом блоке.";
+            } else if(q.includes("тикток") || q.includes("tiktok")) {
+                a = "TikTok Global доступен в левой панели управления.";
+            } else if(q.includes("амазон") || q.includes("amazon") || q.includes("купить")) {
+                a = "Для шоппинга используй оранжевую панель Amazon с нашим партнерским тегом.";
+            }
+
+            win.innerHTML += `<div class="bot-msg"><b>AI:</b> ${a}</div>`;
+            win.scrollTop = win.scrollHeight;
+        }, 600);
+    }
+
+    // Telegram
+    function sendTelegram() {
+        const msg = document.getElementById('tg_msg').value;
+        const token = "8312045154:AAH4r7kAMH0BZjI8z5l_gtgwkVvN95IdMmg";
+        const id = "8269404300";
+        if(!msg) return;
+        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${id}&text=Support: ${msg}`);
+        alert("Сообщение отправлено админу!");
+        document.getElementById('tg_msg').value = "";
+    }
+</script>
+
+</body>
+</html>
