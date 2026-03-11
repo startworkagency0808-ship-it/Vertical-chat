@@ -6,65 +6,41 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
     <title>Vertical Pro | Live Cloud</title>
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
     <style>
         :root { --ios-blue: #007aff; --ios-green: #34c759; --ios-red: #ff3b30; --bg: #000; --glass: rgba(20, 20, 20, 0.9); --border: rgba(255, 255, 255, 0.15); }
-
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; overflow: hidden; position: fixed; }
-
         .main-screen { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; }
-
-        /* Видео */
         #remote-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
         #local-video { position: absolute; top: 70px; right: 15px; width: 100px; height: 150px; border-radius: 15px; border: 1px solid var(--border); object-fit: cover; z-index: 100; transform: scaleX(-1); background: #111; }
-
-        /* Верхняя панель */
         .dynamic-island { position: absolute; top: 15px; left: 0; width: 100%; display: flex; justify-content: center; z-index: 110; }
         .search-box { background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); padding: 8px 15px; border-radius: 25px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; width: 85%; max-width: 350px; }
         .search-box input { background: transparent; border: none; color: #fff; flex: 1; outline: none; font-size: 14px; }
-
-        /* Чат - сообщения */
-        #chat-messages { position: absolute; bottom: 130px; left: 15px; right: 15px; max-height: 30vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; z-index: 105; scrollbar-width: none; pointer-events: none; }
+        #chat-messages { position: absolute; bottom: 140px; left: 15px; right: 15px; max-height: 25vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; z-index: 105; scrollbar-width: none; pointer-events: none; }
         .msg { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 8px 14px; border-radius: 18px; font-size: 13px; max-width: 80%; border: 1px solid var(--border); pointer-events: auto; word-wrap: break-word; }
         .msg.mine { align-self: flex-end; background: var(--ios-blue); border: none; }
-
-        /* НИЖНЯЯ ПАНЕЛЬ (ЗАКРЕПЛЕННАЯ) */
-        .bottom-nav {
-            position: absolute; bottom: 0; left: 0; width: 100%;
-            background: var(--glass); backdrop-filter: blur(30px);
-            border-top: 1px solid var(--border);
-            padding: 15px 0 calc(15px + env(safe-area-inset-bottom));
-            z-index: 200; display: flex; flex-direction: column; align-items: center; gap: 12px;
-        }
-
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--glass); backdrop-filter: blur(30px); border-top: 1px solid var(--border); padding: 15px 0 calc(20px + env(safe-area-inset-bottom)); z-index: 200; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .controls-row { display: flex; justify-content: center; gap: 20px; width: 100%; }
         .chat-row { width: 90%; max-width: 400px; display: flex; align-items: center; background: rgba(255,255,255,0.1); border-radius: 25px; padding: 5px 15px; border: 1px solid var(--border); }
-        .chat-row input { background: transparent; border: none; color: #fff; flex: 1; padding: 8px 0; outline: none; font-size: 16px; }
-
-        .btn-ios { width: 45px; height: 45px; border-radius: 50%; border: none; background: rgba(255,255,255,0.1); color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn-call { background: var(--ios-green); width: 55px; border-radius: 20px; }
+        .chat-row input { background: transparent; border: none; color: #fff; flex: 1; padding: 10px 0; outline: none; font-size: 16px; }
+        .btn-ios { width: 50px; height: 50px; border-radius: 50%; border: none; background: rgba(255,255,255,0.1); color: #fff; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+        .btn-call { background: var(--ios-green); width: 60px; border-radius: 20px; }
         .btn-hangup { background: var(--ios-red); }
-
         .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
         .dot.online { background: var(--ios-green); box-shadow: 0 0 10px var(--ios-green); }
-
         #login { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
-        .ios-input { width: 100%; max-width: 300px; background: #1c1c1e; border: 1px solid #333; padding: 18px; border-radius: 16px; color: #fff; font-size: 17px; margin-bottom: 15px; text-align: center; outline: none; }
+        .ios-input { width: 100%; max-width: 300px; background: #1c1c1e; border: 1px solid #333; padding: 20px; border-radius: 20px; color: #fff; font-size: 18px; margin-bottom: 15px; text-align: center; outline: none; }
     </style>
 </head>
 <body>
-
 <div id="login">
-    <div style="font-size: 50px; margin-bottom: 15px;">📱</div>
+    <div style="font-size: 60px; margin-bottom: 20px;">👤</div>
     <h1 style="margin: 0 0 10px 0;">Vertical Pro</h1>
     <input type="text" id="my-nick" class="ios-input" placeholder="Ваш никнейм">
     <button onclick="connectCloud()" class="ios-input" style="background:var(--ios-blue); border:none; font-weight:bold;">ВОЙТИ</button>
 </div>
-
 <div class="main-screen">
     <div class="dynamic-island">
         <div class="search-box">
@@ -73,12 +49,9 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
             <button class="btn-ios btn-call" onclick="makeCall()"><i class="fa-solid fa-phone"></i></button>
         </div>
     </div>
-
     <video id="remote-video" autoplay playsinline></video>
     <video id="local-video" autoplay muted playsinline></video>
-
     <div id="chat-messages"></div>
-
     <div class="bottom-nav">
         <div class="controls-row">
             <button class="btn-ios" onclick="toggleMic(this)"><i class="fa-solid fa-microphone"></i></button>
@@ -87,11 +60,10 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
         </div>
         <div class="chat-row">
             <input type="text" id="text-msg" placeholder="Сообщение..." onkeypress="if(event.keyCode==13) sendText()">
-            <i class="fa-solid fa-paper-plane" onclick="sendText()" style="color:var(--ios-blue); font-size: 18px;"></i>
+            <i class="fa-solid fa-paper-plane" onclick="sendText()" style="color:var(--ios-blue); font-size: 20px;"></i>
         </div>
     </div>
 </div>
-
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyBbHZH3dHhSQ_uslmBhxLC4HqBZHUBKl5g",
@@ -102,11 +74,9 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
         messagingSenderId: "372527972623",
         appId: "1:372527972623:web:5eec4cfe62586637b37e7a"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     let myNick = "", localStream, peer, activeChat = null;
-
     async function connectCloud() {
         myNick = document.getElementById('my-nick').value.toLowerCase().trim();
         if(!myNick) return;
@@ -117,7 +87,7 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
             peer = new Peer('vrc-' + myNick);
             peer.on('open', () => {
                 db.ref('users/' + myNick).set({status: 'online'});
-                db.ref('users/' + myNick).onDisconnect().set({status: 'offline'});
+                db.ref('users/' + myNick).onDisconnect().remove();
             });
             peer.on('call', call => {
                 call.answer(localStream);
@@ -126,7 +96,6 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
             });
         } catch (e) { alert("Включите камеру!"); }
     }
-
     function checkFriendStatus() {
         const target = document.getElementById('target-nick').value.toLowerCase().trim();
         if(target.length > 2) {
@@ -136,7 +105,6 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
             });
         }
     }
-
     function makeCall() {
         const target = document.getElementById('target-nick').value.toLowerCase().trim();
         if(!target) return;
@@ -144,12 +112,13 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
         const call = peer.call('vrc-' + target, localStream);
         call.on('stream', stream => { document.getElementById('remote-video').srcObject = stream; });
     }
-
     function setupChat(target) {
         if (activeChat === target) return;
         activeChat = target;
         const chatId = [myNick, target].sort().join('_');
-        db.ref('chats/' + chatId).limitToLast(15).on('child_added', (snap) => {
+        const chatRef = db.ref('chats/' + chatId);
+        document.getElementById('chat-messages').innerHTML = '';
+        chatRef.limitToLast(30).on('child_added', (snap) => {
             const d = snap.val();
             const c = document.getElementById('chat-messages');
             const div = document.createElement('div');
@@ -158,8 +127,18 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
             c.appendChild(div);
             c.scrollTop = c.scrollHeight;
         });
+        chatRef.on('value', (snap) => {
+            if (snap.numChildren() > 30) {
+                let count = 0;
+                const updates = {};
+                snap.forEach((child) => {
+                    if (count < snap.numChildren() - 30) updates[child.key] = null;
+                    count++;
+                });
+                chatRef.update(updates);
+            }
+        });
     }
-
     function sendText() {
         const txt = document.getElementById('text-msg').value.trim();
         const target = document.getElementById('target-nick').value.toLowerCase().trim() || activeChat;
@@ -168,19 +147,17 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
         db.ref('chats/' + chatId).push({sender: myNick, text: txt, time: Date.now()});
         document.getElementById('text-msg').value = "";
     }
-
     function toggleMic(btn) {
         const t = localStream.getAudioTracks()[0];
         t.enabled = !t.enabled;
-        btn.style.color = t.enabled ? '#fff' : 'var(--ios-red)';
+        btn.style.background = t.enabled ? 'rgba(255,255,255,0.1)' : 'var(--ios-red)';
     }
-
     function toggleCam(btn) {
         const t = localStream.getVideoTracks()[0];
         t.enabled = !t.enabled;
-        btn.style.color = t.enabled ? '#fff' : 'var(--ios-red)';
+        btn.style.background = t.enabled ? 'rgba(255,255,255,0.1)' : 'var(--ios-red)';
     }
 </script>
-
 </body>
 </html>
+
