@@ -1,10 +1,18 @@
 root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/feed.html
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8">
     <title>Vertical | Global Hub v.39</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3616/3616215.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --accent: #00a2ff; --glass: rgba(255, 255, 255, 0.08); --border: rgba(255, 255, 255, 0.15); }
@@ -50,7 +58,7 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/feed.
             #main-app { flex-direction: column; }
             .sidebar { width: auto; order: 2; border: none; }
             .content { order: 1; padding: 15px; }
-            .sidebar:first-child { order: 3; } /* Убираем левый сайдбар вниз на мобиле */
+            .sidebar:first-child { order: 3; }
         }
     </style>
 </head>
