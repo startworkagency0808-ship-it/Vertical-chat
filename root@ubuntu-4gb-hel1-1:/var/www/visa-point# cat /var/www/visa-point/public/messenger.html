@@ -3,115 +3,242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Vertical UA Pro</title>
+    <title>Vertical UA • Secure</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --sab: env(safe-area-inset-bottom, 20px); }
+        :root {
+            --sab: env(safe-area-inset-bottom, 20px);
+            --sat: env(safe-area-inset-top, 0px);
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, sans-serif; background: #e6ebee; height: 100vh; height: -webkit-fill-available; display: flex; flex-direction: column; overflow: hidden; }
         
-        .header { background: #517da2; color: white; padding: 50px 15px 15px; display: flex; align-items: center; z-index: 10; }
-        #messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='60'%3E%3Ctext x='10' y='30' font-family='sans-serif' font-size='8' fill='%23517da2' opacity='0.08'%3EVertical Ukraine%3C/text%3E%3C/svg%3E"); }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #e6ebee;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-        .footer { background: white; padding: 10px 10px calc(15px + var(--sab)); display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd; }
-        .input-box { flex: 1; background: #f1f3f5; border-radius: 25px; display: flex; align-items: center; padding: 0 15px; height: 45px; }
-        input { flex: 1; border: none; background: none; font-size: 16px; outline: none; }
+        /* Шапка с адаптацией под челку */
+        .header {
+            background: #517da2;
+            color: white;
+            padding: calc(15px + var(--sat)) 15px 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
 
-        .bubble { padding: 12px; border-radius: 18px; max-width: 85%; font-size: 15px; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='60'%3E%3Ctext x='10' y='30' font-family='sans-serif' font-size='8' fill='%23517da2' opacity='0.08'%3EVertical Ukraine%3C/text%3E%3C/svg%3E");
+        }
+
+        /* Футер адаптированный под жест управления внизу */
+        .footer {
+            background: white;
+            padding: 10px 10px calc(10px + var(--sab));
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .input-box {
+            flex: 1;
+            background: #f1f3f5;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 45px;
+        }
+
+        input {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 16px;
+            outline: none;
+            width: 100%;
+        }
+
+        .bubble {
+            padding: 12px;
+            border-radius: 18px;
+            max-width: 85%;
+            font-size: 15px;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            word-wrap: break-word;
+        }
         .sent { align-self: flex-end; background: #effdde; border-bottom-right-radius: 2px; }
         .rcvd { align-self: flex-start; background: white; border-bottom-left-radius: 2px; }
 
-        .file-msg { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.03); padding: 8px; border-radius: 10px; }
-        .msg-actions { display: flex; gap: 15px; margin-top: 8px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 5px; font-size: 13px; }
-        .msg-actions i { cursor: pointer; opacity: 0.6; transition: 0.2s; }
-        .msg-actions i:hover { opacity: 1; color: #517da2; }
+        .msg-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding-top: 5px;
+        }
+        .msg-actions i { cursor: pointer; opacity: 0.5; font-size: 14px; }
+        .rec-active { color: #e74c3c !important; animation: pulse 1s infinite; }
+        @keyframes pulse { 50% { opacity: 0.5; } }
         
-        .rec-active { color: #e74c3c !important; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.3; } }
-        video, img { max-width: 100%; border-radius: 10px; }
-        audio { width: 100%; height: 35px; }
+        img, video { max-width: 100%; border-radius: 12px; display: block; }
+        audio { width: 100%; height: 35px; margin-top: 5px; }
+
+        /* Оверлей звонка */
+        #call-overlay {
+            position: fixed; inset: 0; background: #000;
+            display: none; flex-direction: column;
+            padding-top: calc(10px + var(--sat));
+            padding-bottom: calc(10px + var(--sab));
+            z-index: 9999;
+        }
+        #call-header { color: #fff; padding: 10px 15px; display: flex; justify-content: space-between; font-size: 14px; }
+        #videos-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+        .remote-video-box { width: 100%; max-height: 260px; background: #111; border-radius: 12px; overflow: hidden; }
+        .remote-video-box video { width: 100%; height: 100%; object-fit: cover; }
+        
+        #localVideoBox {
+            position: fixed; right: 10px; bottom: calc(80px + var(--sab));
+            width: 100px; height: 150px; background: #111;
+            border-radius: 12px; overflow: hidden; display: none; z-index: 10000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        #localVideoBox video { width: 100%; height: 100%; object-fit: cover; }
+
+        #call-controls { display: flex; justify-content: center; gap: 20px; padding: 20px 0; }
+        #call-controls button {
+            width: 55px; height: 55px; border-radius: 50%; border: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: #fff; cursor: pointer;
+        }
+        .btn-mic { background: #2ecc71; }
+        .btn-cam { background: #3498db; }
+        .btn-end { background: #e74c3c; }
+        .btn-off { filter: grayscale(1) opacity(0.5); }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <i class="fas fa-arrow-left" onclick="history.back()" style="margin-right:15px; font-size: 20px;"></i>
-    <div style="flex:1"><b id="peer-name">Завантаження...</b><br><small>Vertical UA</small></div>
-    <div style="display:flex; gap:22px; font-size:22px;">
-        <i class="fas fa-video" onclick="alert('Виклик...')"></i>
-        <i class="fas fa-phone" onclick="alert('Дзвінок...')"></i>
+    <i class="fas fa-arrow-left" onclick="history.back()" style="margin-right:15px;"></i>
+    <div style="flex:1">
+        <b id="peer-name">Завантаження...</b><br>
+        <small><i class="fas fa-lock" style="font-size: 10px;"></i> Vertical UA Secure</small>
+    </div>
+    <div style="display:flex; gap:22px; font-size:20px;">
+        <i class="fas fa-video" id="v-call" style="cursor:pointer"></i>
+        <i class="fas fa-phone" id="a-call" style="cursor:pointer"></i>
     </div>
 </div>
 
 <div id="messages"></div>
 
 <div class="footer">
-    <label for="f-up"><i class="fas fa-paperclip" style="font-size: 24px; color: #707579;"></i></label>
-    <input type="file" id="f-up" style="display:none" onchange="handleFile(this)">
-    
+    <label for="f-up">
+        <i class="fas fa-paperclip" style="font-size: 22px; color: #707579; cursor:pointer"></i>
+    </label>
+    <input type="file" id="f-up" style="display:none" onchange="handleFile(this)" accept="*/*">
+
     <div class="input-box">
-        <input type="text" id="minp" placeholder="Повідомлення...">
-        <i class="fas fa-microphone" id="mic" style="font-size: 22px; color: #517da2; cursor:pointer;"></i>
+        <input type="text" id="minp" placeholder="Повідомлення..." autocomplete="off">
+        <i class="fas fa-microphone" id="mic-btn" style="font-size: 20px; color: #517da2; cursor:pointer"></i>
     </div>
-    
-    <div onclick="send()"><i class="fas fa-khanda" style="transform: rotate(45deg); color: #517da2; font-size: 28px;"></i></div>
+
+    <div onclick="sendMsg()">
+        <i class="fas fa-paper-plane" style="color: #517da2; font-size: 24px; cursor:pointer"></i>
+    </div>
+</div>
+
+<div id="call-overlay">
+    <div id="call-header">
+        <span id="call-title">Звонок</span>
+        <span id="call-status">Підключення...</span>
+    </div>
+    <div id="videos-container"></div>
+    <div id="call-controls">
+        <button id="btn-mic" class="btn-mic"><i class="fas fa-microphone"></i></button>
+        <button id="btn-cam" class="btn-cam"><i class="fas fa-video"></i></button>
+        <button id="btn-end" class="btn-end"><i class="fas fa-phone-slash"></i></button>
+    </div>
+</div>
+
+<div id="localVideoBox">
+    <video id="localVideo" autoplay muted playsinline></video>
 </div>
 
 <script>
     const socket = io({ transports: ['websocket'] });
     const p = new URLSearchParams(window.location.search);
-    const my = p.get('my'); const to = p.get('to');
-    document.getElementById('peer-name').innerText = "+" + to;
+    const my = p.get('my'); 
+    const to = p.get('to');
+    const room = [my, to].sort().join('-'); // Уникальная комната для двоих
+    
+    document.getElementById('peer-name').innerText = "+" + (to || 'User');
 
-    if(my) socket.emit('join', my.replace(/\D/g, ''));
+    if (my) socket.emit('join', my.replace(/\D/g, ''));
 
-    function send() {
+    // --- Текстовые сообщения ---
+    function sendMsg() {
         const i = document.getElementById('minp');
-        if(!i.value.trim()) return;
+        if (!i.value.trim()) return;
         const d = { from: my, to: to, val: i.value, type: 'text', id: Date.now() };
         socket.emit('send_msg', d);
         addMsg('sent', d);
         i.value = '';
     }
 
-    // ГОЛОСОВЫЕ
+    // --- Голосовые сообщения ---
     let mediaRec; let chunks = [];
-    document.getElementById('mic').onclick = async function() {
+    document.getElementById('mic-btn').onclick = async function () {
         if (!mediaRec || mediaRec.state === "inactive") {
-            const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRec = new MediaRecorder(s);
-            chunks = [];
-            mediaRec.ondataavailable = e => chunks.push(e.data);
-            mediaRec.onstop = () => {
-                const blob = new Blob(chunks, { type: 'audio/mp3' });
-                const r = new FileReader();
-                r.onload = (e) => {
-                    const d = { from: my, to: to, val: e.target.result, type: 'audio', id: Date.now() };
-                    socket.emit('send_msg', d);
-                    addMsg('sent', d);
+            try {
+                const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRec = new MediaRecorder(s);
+                chunks = [];
+                mediaRec.ondataavailable = e => chunks.push(e.data);
+                mediaRec.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/mp3' });
+                    const r = new FileReader();
+                    r.onload = (e) => {
+                        const d = { from: my, to: to, val: e.target.result, type: 'audio', id: Date.now() };
+                        socket.emit('send_msg', d);
+                        addMsg('sent', d);
+                    };
+                    r.readAsDataURL(blob);
                 };
-                r.readAsDataURL(blob);
-            };
-            mediaRec.start();
-            this.classList.add('rec-active');
+                mediaRec.start();
+                this.classList.add('rec-active');
+            } catch (e) { alert("Доступ до мікрофона обмежений"); }
         } else {
             mediaRec.stop();
             this.classList.remove('rec-active');
         }
     };
 
-    // ФАЙЛЫ (ВСЕ ФОРМАТЫ)
+    // --- Файлы всех форматов ---
     function handleFile(el) {
-        const f = el.files[0]; if(!f) return;
+        const f = el.files[0]; if (!f) return;
         const r = new FileReader();
         r.onload = (e) => {
-            let type = 'file';
-            if(f.type.startsWith('image')) type = 'img';
-            else if(f.type.startsWith('video')) type = 'video';
-            else if(f.type.startsWith('audio')) type = 'audio';
-            
-            const d = { from: my, to: to, val: e.target.result, name: f.name, type: type, id: Date.now() };
+            let t = 'file';
+            if (f.type.startsWith('image')) t = 'img';
+            else if (f.type.startsWith('video')) t = 'video';
+            else if (f.type.startsWith('audio')) t = 'audio';
+            const d = { from: my, to: to, val: e.target.result, name: f.name, type: t, id: Date.now() };
             socket.emit('send_msg', d);
             addMsg('sent', d);
         };
@@ -123,30 +250,52 @@
         const b = document.createElement('div');
         b.className = `bubble ${side}`;
         b.id = "m-" + d.id;
-        
-        let html = '';
-        if(d.type === 'text') html = `<div>${d.val}</div>`;
-        else if(d.type === 'img') html = `<img src="${d.val}">`;
-        else if(d.type === 'video') html = `<video controls src="${d.val}"></video>`;
-        else if(d.type === 'audio') html = `<audio controls src="${d.val}"></audio>`;
-        else html = `<div class="file-msg"><i class="fas fa-file-download" style="font-size:20px"></i> <span>${d.name}</span></div>`;
 
-        html += `<div class="msg-actions">
+        let html = '';
+        if (d.type === 'text') html = `<div>${d.val}</div>`;
+        else if (d.type === 'img') html = `<img src="${d.val}">`;
+        else if (d.type === 'video') html = `<video controls src="${d.val}"></video>`;
+        else if (d.type === 'audio') html = `<audio controls src="${d.val}"></audio>`;
+        else html = `<div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-file-alt"></i> ${d.name || 'file'}</div>`;
+
+        b.innerHTML = html + `<div class="msg-actions">
             ${d.type !== 'text' ? `<a href="${d.val}" download="${d.name || 'file'}" style="color:inherit"><i class="fas fa-save"></i></a>` : ''}
             <i class="fas fa-trash" onclick="document.getElementById('m-${d.id}').remove()"></i>
         </div>`;
-
-        b.innerHTML = html;
         m.appendChild(b);
         m.scrollTop = m.scrollHeight;
     }
 
     socket.on('receive_msg', (d) => {
-        if(String(d.from).replace(/\D/g,'') === String(to).replace(/\D/g,'')) addMsg('rcvd', d);
+        if (String(d.from).replace(/\D/g, '') === String(to).replace(/\D/g, '')) addMsg('rcvd', d);
     });
 
-    window.onresize = () => { document.body.style.height = window.innerHeight + 'px'; };
-    document.getElementById('minp').onkeypress = (e) => { if(e.key==='Enter') send(); };
+    // --- ВИДЕО ЗВОНКИ (WebRTC) ---
+    let localStream; let peers = {};
+    const callOverlay = document.getElementById('call-overlay');
+    const localVideo = document.getElementById('localVideo');
+
+    async function startCall(video) {
+        callOverlay.style.display = 'flex';
+        document.getElementById('call-title').innerText = video ? "Відеодзвінок" : "Аудіодзвінок";
+        localStream = await navigator.mediaDevices.getUserMedia({ video, audio: true });
+        localVideo.srcObject = localStream;
+        document.getElementById('localVideoBox').style.display = 'block';
+        socket.emit('join_call', { room, user: my });
+    }
+
+    function endCall() {
+        if(localStream) localStream.getTracks().forEach(t => t.stop());
+        callOverlay.style.display = 'none';
+        document.getElementById('localVideoBox').style.display = 'none';
+        location.reload(); // Простой способ сбросить WebRTC сессию
+    }
+
+    document.getElementById('v-call').onclick = () => startCall(true);
+    document.getElementById('a-call').onclick = () => startCall(false);
+    document.getElementById('btn-end').onclick = () => endCall();
+
+    document.getElementById('minp').onkeypress = (e) => { if (e.key === 'Enter') sendMsg(); };
 </script>
 </body>
 </html>
