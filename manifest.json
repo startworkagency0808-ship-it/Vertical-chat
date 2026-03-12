@@ -1,16 +1,20 @@
 {
-  "short_name": "Vertical",
-  "name": "Vertical Pro Live",
+  "short_name": "V-Infinity",
+  "name": "Vertical Infinity",
+  "description": "Vertical Communication System 2026",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3616/3616215.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/2618/2618245.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "sizes": "512x512"
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/chat.html",
-  "background_color": "#000000",
   "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#007aff",
   "scope": "/",
-  "theme_color": "#000000"
+  "lang": "ru"
 }
