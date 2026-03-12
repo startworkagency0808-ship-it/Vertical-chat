@@ -3,55 +3,88 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Vertical UA</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        /* Добавлена адаптация под высоту экрана мобильных устройств */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #f0f2f5; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh;
+            height: -webkit-fill-available;
+            padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+        }
+
         .flag-wave { width: 100px; height: 65px; margin-bottom: 20px; background: linear-gradient(to bottom, #0057b7 50%, #ffd700 50%); border-radius: 4px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); animation: wave 3s infinite ease-in-out; }
         @keyframes wave { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-10px); } }
-        .auth-card { background: white; width: 90%; max-width: 380px; padding: 35px 25px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center; }
+        
+        .auth-card { background: white; width: 100%; max-width: 380px; padding: 35px 25px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center; }
         h1 { color: #1a1a1a; font-size: 28px; margin-bottom: 5px; font-weight: 800; }
+        
         .input-group { position: relative; margin-bottom: 15px; }
         .input-group i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #517da2; }
+        
         input { width: 100%; padding: 18px 18px 18px 50px; border: 2px solid #f1f3f5; border-radius: 18px; font-size: 16px; background: #f8f9fa; outline: none; transition: 0.3s; }
-        .btn-join { width: 100%; padding: 18px; background: #517da2; color: white; border: none; border-radius: 18px; font-size: 16px; font-weight: 700; cursor: pointer; }
+        input:focus { border-color: #517da2; background: #fff; }
+        
+        .btn-join { width: 100%; padding: 18px; background: #517da2; color: white; border: none; border-radius: 18px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-join:active { transform: scale(0.98); opacity: 0.9; }
     </style>
 </head>
 <body>
     <div class="flag-wave"></div>
     <h1>Vertical UA</h1>
     <p style="color:#707579; margin-bottom:20px;">Зв'язок без кордонів</p>
+    
     <div class="auth-card">
         <div class="input-group">
             <i class="fas fa-mobile-alt"></i>
-            <input type="tel" id="myPhone" placeholder="Ваш номер">
+            <input type="tel" id="myPhone" placeholder="Ваш номер" inputmode="tel">
         </div>
         <div class="input-group">
             <i class="fas fa-paper-plane"></i>
-            <input type="tel" id="targetPhone" placeholder="Номер отримувача">
+            <input type="tel" id="targetPhone" placeholder="Номер отримувача" inputmode="tel">
         </div>
         <button class="btn-join" onclick="startApp()">УВІЙТИ</button>
     </div>
 
     <script>
-        // При загрузке проверяем, есть ли сохраненный номер
         window.onload = function() {
             const saved = localStorage.getItem('myVerticalNum');
             if(saved) {
-                document.getElementById('myPhone').value = saved;
+                document.getElementById('myPhone').value = "+" + saved;
                 document.getElementById('targetPhone').focus();
             }
         };
 
+        // Добавлена поддержка Enter для быстрого входа
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') startApp();
+        });
+
         function startApp() {
             const my = document.getElementById('myPhone').value.replace(/\D/g,'');
             const to = document.getElementById('targetPhone').value.replace(/\D/g,'');
-            if(my.length < 7 || to.length < 7) return alert("Введіть повні номери!");
+            
+            if(my.length < 7 || to.length < 7) {
+                return alert("Будь ласка, введіть повні номери телефонів!");
+            }
 
-            // Сохраняем "привязку" номера к телефону
             localStorage.setItem('myVerticalNum', my);
+            
+            // Переход на messenger.html (убедись, что файл на GitHub называется именно так)
             window.location.href = "messenger.html?my=" + my + "&to=" + to;
         }
     </script>
