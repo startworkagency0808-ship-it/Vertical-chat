@@ -8,89 +8,143 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --sab: env(safe-area-inset-bottom, 20px); }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, sans-serif; background: #e6ebee; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #e6ebee; 
+            height: 100vh; 
+            height: -webkit-fill-available; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
 
-        .header { background: #517da2; color: white; padding: 40px 15px 15px; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; }
+        /* Шапка */
+        .header { 
+            background: #517da2; color: white; 
+            padding: 50px 15px 15px; 
+            display: flex; align-items: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; 
+        }
 
-        #messages {
-            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;
+        /* Область повідомлень з фоном Vertical Ukraine */
+        #messages { 
+            flex: 1; overflow-y: auto; padding: 15px; 
+            display: flex; flex-direction: column; gap: 10px;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='60'%3E%3Ctext x='10' y='30' font-family='sans-serif' font-size='8' fill='%23517da2' opacity='0.08'%3EVertical Ukraine%3C/text%3E%3C/svg%3E");
         }
 
-        .footer {
-            background: white;
-            padding: 10px 10px calc(10px + var(--sab));
-            display: flex; align-items: center; gap: 10px;
+        /* Низ (Панель повідомлень) - адаптована під Samsung/iPhone */
+        .footer { 
+            background: white; 
+            padding: 10px 10px calc(15px + var(--sab)); 
+            display: flex; align-items: center; gap: 10px; 
             border-top: 1px solid #ddd;
             position: relative;
         }
 
-        .input-box { flex: 1; background: #f1f3f5; border-radius: 20px; padding: 5px 15px; display: flex; align-items: center; }
-        input { flex: 1; border: none; background: none; padding: 10px; font-size: 16px; outline: none; }
+        .input-box { 
+            flex: 1; background: #f1f3f5; border-radius: 25px; 
+            display: flex; align-items: center; padding: 0 15px; height: 45px; 
+        }
 
-        .bubble { padding: 10px 15px; border-radius: 18px; max-width: 80%; font-size: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        input { flex: 1; border: none; background: none; font-size: 16px; outline: none; height: 100%; }
+        
+        .bubble { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 15px; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .sent { align-self: flex-end; background: #effdde; border-bottom-right-radius: 2px; }
         .rcvd { align-self: flex-start; background: white; border-bottom-left-radius: 2px; }
-
-        .sword { transform: rotate(45deg); color: #517da2; font-size: 24px; cursor: pointer; padding: 5px; }
+        
+        .sword { transform: rotate(45deg); color: #517da2; font-size: 28px; cursor: pointer; }
+        .rec-blink { color: red !important; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.3; } }
+        video, audio, img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <i class="fas fa-arrow-left" onclick="location.href='chat.html'" style="margin-right:15px;"></i>
-    <div style="flex:1"><b id="p-name">Завантаження...</b><br><small>Vertical UA</small></div>
-    <div style="display:flex; gap:15px;"><i class="fas fa-video"></i><i class="fas fa-phone"></i></div>
+    <i class="fas fa-arrow-left" onclick="history.back()" style="margin-right:15px; font-size: 20px;"></i>
+    <div style="flex:1"><b id="peer-name">+...</b><br><small>Vertical UA</small></div>
+    <div style="display:flex; gap:20px; font-size:22px;">
+        <i class="fas fa-video" id="v-call"></i>
+        <i class="fas fa-phone"></i>
+    </div>
 </div>
 
 <div id="messages"></div>
 
 <div class="footer">
-    <i class="fas fa-paperclip" style="color:#707579; font-size:22px;"></i>
+    <label for="f-up"><i class="fas fa-paperclip" style="font-size: 24px; color: #707579;"></i></label>
+    <input type="file" id="f-up" style="display:none" onchange="upFile(this)">
+    
     <div class="input-box">
         <input type="text" id="minp" placeholder="Повідомлення...">
-        <i class="fas fa-microphone" style="color:#517da2;"></i>
+        <i class="fas fa-microphone" id="mic" style="font-size: 22px; color: #517da2;"></i>
     </div>
+    
     <div onclick="snd()"><i class="fas fa-khanda sword"></i></div>
 </div>
 
 <script>
-    const socket = io();
-    const urlP = new URLSearchParams(window.location.search);
-    const my = urlP.get('my');
-    const to = urlP.get('to');
+    // ПІДКЛЮЧЕННЯ: Ніяких IP! Socket.io сам знайде сервер через домен visa-point.eu
+    const socket = io({ transports: ['websocket'] });
 
-    document.getElementById('p-name').innerText = "+" + to;
+    const p = new URLSearchParams(window.location.search);
+    const my = p.get('my'); const to = p.get('to');
+    document.getElementById('peer-name').innerText = "+" + to;
 
-    // Авто-подключение
-    socket.emit('join', my);
+    // Реєстрація на сервері
+    if(my) socket.emit('join', my.replace(/\D/g, ''));
 
+    // Відправка тексту
     function snd() {
         const i = document.getElementById('minp');
         if(!i.value.trim()) return;
-        const d = { from: my, to: to, val: i.value.trim() };
+        const d = { from: my, to: to, val: i.value, type: 'text' };
         socket.emit('send_msg', d);
-        add('sent', d.val);
+        addMsg('sent', d);
         i.value = '';
-        i.focus();
     }
 
+    // Прийом повідомлень
     socket.on('receive_msg', (d) => {
-        // Очистка номеров для сравнения
-        const dFrom = String(d.from).replace(/\D/g,'');
-        const currentTo = String(to).replace(/\D/g,'');
-        if(dFrom === currentTo) add('rcvd', d.val);
+        if(String(d.from).replace(/\D/g,'') === String(to).replace(/\D/g,'')) addMsg('rcvd', d);
     });
 
-    function add(side, txt) {
+    // Відображення повідомлень (Текст, Фото, Відео, Голос)
+    function addMsg(side, d) {
         const m = document.getElementById('messages');
         const b = document.createElement('div');
         b.className = `bubble ${side}`;
-        b.innerText = txt;
+        
+        if(d.type === 'text') b.innerText = d.val;
+        else if(d.type === 'audio') b.innerHTML = `<audio controls src="${d.val}"></audio>`;
+        else if(d.type === 'img') b.innerHTML = `<img src="${d.val.data || d.val}">`;
+        else if(d.type === 'video') b.innerHTML = `<video controls src="${d.val.data || d.val}"></video>`;
+        
         m.appendChild(b);
         m.scrollTop = m.scrollHeight;
     }
+
+    // Файли
+    function upFile(el) {
+        const f = el.files[0]; if(!f) return;
+        const r = new FileReader();
+        r.onload = (e) => {
+            let t = f.type.startsWith('image') ? 'img' : (f.type.startsWith('video') ? 'video' : 'file');
+            const d = { from: my, to: to, val: {name: f.name, data: e.target.result}, type: t };
+            socket.emit('send_msg', d);
+            addMsg('sent', d);
+        };
+        r.readAsDataURL(f);
+    }
+
+    // Робота з клавіатурою для смартфонів
+    window.addEventListener('resize', () => {
+        document.body.style.height = window.innerHeight + 'px';
+        window.scrollTo(0,0);
+    });
 
     document.getElementById('minp').onkeypress = (e) => { if(e.key==='Enter') snd(); };
 </script>
