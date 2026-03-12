@@ -1,158 +1,59 @@
 root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.html
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
-    <meta charset="utf-8">
-    <title>Vertical Infinity</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vertical UA</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        :root { --v-blue: #00aff0; --bg: #fdfdfd; --border: #e0e7ed; }
-        body, html { margin: 0; padding: 0; height: 100dvh; width: 100%; background: var(--bg); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-
-        /* Адаптация под челку iPhone */
-        .app-wrap { display: flex; height: 100%; width: 100%; flex-direction: column; padding-top: env(safe-area-inset-top); box-sizing: border-box; }
-        
-        .chat-header { padding: 10px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fff; height: 65px; z-index: 1000; }
-        
-        .header-left { display: flex; flex-direction: column; max-width: 150px; }
-        .header-right { display: flex; align-items: center; gap: 5px; }
-
-        .messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9fbfd; display: flex; flex-direction: column; gap: 12px; }
-        .bubble { max-width: 80%; padding: 12px; border-radius: 18px; font-size: 15px; position: relative; cursor: pointer; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .bubble:active { transform: scale(0.97); opacity: 0.8; }
-        
-        .out { align-self: flex-end; background: var(--v-blue); color: #fff; border-bottom-right-radius: 4px; }
-        .in { align-self: flex-start; background: #fff; border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-
-        .input-bar { padding: 10px 15px calc(15px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; background: #fff; }
-        .m-input { flex: 1; background: #f1f4f6; border: 1px solid var(--border); border-radius: 20px; padding: 12px 15px; outline: none; font-size: 16px; }
-        
-        .h-btn { font-size: 20px; color: var(--v-blue); cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; }
-        .h-btn:active { background: #f0faff; transform: scale(0.85); }
-
-        .media-file { max-width: 100%; border-radius: 12px; display: block; margin-bottom: 5px; }
-        .dl-btn { font-size: 11px; text-decoration: none; color: inherit; opacity: 0.7; display: block; text-align: right; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2); }
-        .in .dl-btn { border-top: 1px solid var(--border); }
-
-        #login-screen { position: fixed; inset: 0; background: #fff; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        .flag-wave { width: 100px; height: 65px; margin-bottom: 20px; background: linear-gradient(to bottom, #0057b7 50%, #ffd700 50%); border-radius: 4px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); animation: wave 3s infinite ease-in-out; }
+        @keyframes wave { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-10px); } }
+        .auth-card { background: white; width: 90%; max-width: 380px; padding: 35px 25px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center; }
+        h1 { color: #1a1a1a; font-size: 28px; margin-bottom: 5px; font-weight: 800; }
+        .input-group { position: relative; margin-bottom: 15px; }
+        .input-group i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #517da2; }
+        input { width: 100%; padding: 18px 18px 18px 50px; border: 2px solid #f1f3f5; border-radius: 18px; font-size: 16px; background: #f8f9fa; outline: none; transition: 0.3s; }
+        .btn-join { width: 100%; padding: 18px; background: #517da2; color: white; border: none; border-radius: 18px; font-size: 16px; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
-
-    <div id="login-screen">
-        <h2 style="color:var(--v-blue)">Vertical Infinity</h2>
-        <input type="text" id="user-nick" class="m-input" placeholder="Ваш ник..." style="width:100%; margin-bottom:15px; text-align:center;">
-        <button onclick="saveLogin()" style="background:var(--v-blue); color:#fff; border:none; padding:15px; border-radius:25px; width:100%; font-weight:bold; cursor:pointer;">Войти</button>
+    <div class="flag-wave"></div>
+    <h1>Vertical UA</h1>
+    <p style="color:#707579; margin-bottom:20px;">Зв'язок без кордонів</p>
+    <div class="auth-card">
+        <div class="input-group">
+            <i class="fas fa-mobile-alt"></i>
+            <input type="tel" id="myPhone" placeholder="Ваш номер">
+        </div>
+        <div class="input-group">
+            <i class="fas fa-paper-plane"></i>
+            <input type="tel" id="targetPhone" placeholder="Номер отримувача">
+        </div>
+        <button class="btn-join" onclick="startApp()">УВІЙТИ</button>
     </div>
 
-    <div class="app-wrap">
-        <div class="chat-header">
-            <div class="header-left">
-                <b id="chat-with" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Ник собеседника</b>
-                <small id="my-name" style="color:green"></small>
-            </div>
-            <div class="header-right">
-                <i class="fa-solid fa-phone h-btn" onclick="alert('Вызов...')"></i>
-                <i class="fa-solid fa-video h-btn" onclick="alert('Видеосвязь...')"></i>
-                <i class="fa-solid fa-magnifying-glass h-btn" onclick="setFriend()"></i>
-                <i class="fa-solid fa-door-open h-btn" style="color:#ff4b4b" onclick="logout()"></i>
-            </div>
-        </div>
-
-        <div class="messages" id="box"></div>
-
-        <div class="input-bar">
-            <i class="fa-solid fa-paperclip h-btn" onclick="document.getElementById('file-input').click()"></i>
-            <input type="file" id="file-input" style="display:none" onchange="upFile(this)">
-            <input type="text" id="msg" class="m-input" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendMsg()">
-            <i class="fa-solid fa-paper-plane h-btn" onclick="sendMsg()"></i>
-        </div>
-    </div>
-
-<script>
-    // Подключение к серверу (укажите ваш IP после настройки server.js)
-    const socket = io('http://ВАШ_IP:3000'); 
-    let myNick = localStorage.getItem('vi_nick');
-
-    if(myNick) {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('my-name').innerText = 'Вы: @' + myNick;
-        socket.emit('join', myNick);
-    }
-
-    function saveLogin() {
-        const n = document.getElementById('user-nick').value.trim();
-        if(n) { localStorage.setItem('vi_nick', n); location.reload(); }
-    }
-
-    function setFriend() {
-        const f = prompt("Кому пишем? (Введите ник друга):");
-        if(f) document.getElementById('chat-with').innerText = f;
-    }
-
-    socket.on('receive_msg', (data) => {
-        append(data.html, 'in', data.id);
-    });
-
-    function sendMsg() {
-        const m = document.getElementById('msg');
-        const friend = document.getElementById('chat-with').innerText;
-        if(!m.value.trim() || friend === 'Ник собеседника') {
-            if(friend === 'Ник собеседника') alert('Сначала выберите собеседника через лупу!');
-            return;
-        }
-        
-        const id = 'm' + Date.now();
-        append(m.value, 'out', id);
-        socket.emit('send_msg', { to: friend, html: m.value, id: id, from: myNick });
-        m.value = '';
-    }
-
-    function upFile(input) {
-        const file = input.files[0];
-        const friend = document.getElementById('chat-with').innerText;
-        if(!file || friend === 'Ник собеседника') return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const url = e.target.result;
-            let html = '';
-            if(file.type.startsWith('image/')) {
-                html = '<img src="'+url+'" class="media-file"><a href="'+url+'" download="vi_photo" class="dl-btn"><i class="fa-solid fa-download"></i> Сохранить</a>';
-            } else if(file.type.startsWith('video/')) {
-                html = '<video src="'+url+'" controls class="media-file"></video><a href="'+url+'" download="vi_video" class="dl-btn"><i class="fa-solid fa-download"></i> Сохранить</a>';
+    <script>
+        // При загрузке проверяем, есть ли сохраненный номер
+        window.onload = function() {
+            const saved = localStorage.getItem('myVerticalNum');
+            if(saved) {
+                document.getElementById('myPhone').value = saved;
+                document.getElementById('targetPhone').focus();
             }
-            
-            const id = 'f' + Date.now();
-            append(html, 'out', id);
-            socket.emit('send_msg', { to: friend, html: html, id: id, from: myNick });
         };
-        reader.readAsDataURL(file);
-    }
 
-    function append(html, type, id) {
-        const b = document.getElementById('box');
-        const d = document.createElement('div');
-        d.className = 'bubble ' + type;
-        d.id = id;
-        d.innerHTML = html;
-        
-        // Удаление при нажатии
-        d.onclick = () => { 
-            if(confirm("Удалить это сообщение у себя?")) d.remove(); 
-        };
-        
-        b.appendChild(d);
-        b.scrollTop = b.scrollHeight;
-    }
+        function startApp() {
+            const my = document.getElementById('myPhone').value.replace(/\D/g,'');
+            const to = document.getElementById('targetPhone').value.replace(/\D/g,'');
+            if(my.length < 7 || to.length < 7) return alert("Введіть повні номери!");
 
-    function logout() { if(confirm("Выйти из аккаунта?")) { localStorage.clear(); location.reload(); } }
-</script>
+            // Сохраняем "привязку" номера к телефону
+            localStorage.setItem('myVerticalNum', my);
+            window.location.href = "messenger.html?my=" + my + "&to=" + to;
+        }
+    </script>
 </body>
 </html>
-
-sudo chattr +i /var/www/visa-point/public/chat.html
