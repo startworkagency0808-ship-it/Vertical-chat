@@ -5,126 +5,154 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
     <meta charset="utf-8">
     <title>Vertical Infinity</title>
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         :root { --v-blue: #00aff0; --bg: #fdfdfd; --border: #e0e7ed; }
-        body, html { margin: 0; padding: 0; height: 100dvh; width: 100%; background: var(--bg); font-family: 'Segoe UI', Arial, sans-serif; overflow: hidden; display: flex; flex-direction: column; }
-        
-        #auth-screen { position: fixed; inset: 0; background: #fff; z-index: 5000; display: flex; align-items: center; justify-content: center; text-align: center; }
-        .auth-card { width: 85%; max-width: 350px; }
-        .v-logo-big { font-size: 42px; font-weight: bold; color: var(--v-blue); margin-bottom: 30px; }
-        
-        .app-wrap { display: flex; flex: 1; height: 100%; width: 100%; overflow: hidden; }
-        .chat-area { flex: 1; display: flex; flex-direction: column; position: relative; background: #fff; height: 100%; }
-        .chat-header { padding: 10px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fff; }
-        
-        #video-overlay { position: absolute; top: 60px; right: 15px; width: 140px; aspect-ratio: 4/3; background: #000; border-radius: 10px; z-index: 100; border: 2px solid var(--v-blue); display: none; overflow: hidden; }
-        #video-overlay.fullscreen { position: fixed; inset: 0; width: 100vw; height: 100dvh; border: none; border-radius: 0; top: 0; right: 0; z-index: 500; }
+        body, html { margin: 0; padding: 0; height: 100dvh; width: 100%; background: var(--bg); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 
-        .messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9fbfd; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { max-width: 80%; padding: 10px 14px; border-radius: 15px; font-size: 15px; }
-        .in { align-self: flex-start; background: #fff; border: 1px solid var(--border); }
-        .out { align-self: flex-end; background: var(--v-blue); color: #fff; }
+        /* Адаптация под челку iPhone */
+        .app-wrap { display: flex; height: 100%; width: 100%; flex-direction: column; padding-top: env(safe-area-inset-top); box-sizing: border-box; }
+        
+        .chat-header { padding: 10px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fff; height: 65px; z-index: 1000; }
+        
+        .header-left { display: flex; flex-direction: column; max-width: 150px; }
+        .header-right { display: flex; align-items: center; gap: 5px; }
 
-        .input-bar { padding: 10px 15px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; background: #fff; }
-        .m-input { flex: 1; background: #f1f4f6; border: 1px solid var(--border); border-radius: 20px; padding: 10px 15px; outline: none; font-size: 16px; }
-        .h-btn { font-size: 20px; color: var(--v-blue); cursor: pointer; padding: 5px; }
-        .btn-main { width: 100%; background: var(--v-blue); color: #fff; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9fbfd; display: flex; flex-direction: column; gap: 12px; }
+        .bubble { max-width: 80%; padding: 12px; border-radius: 18px; font-size: 15px; position: relative; cursor: pointer; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .bubble:active { transform: scale(0.97); opacity: 0.8; }
+        
+        .out { align-self: flex-end; background: var(--v-blue); color: #fff; border-bottom-right-radius: 4px; }
+        .in { align-self: flex-start; background: #fff; border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+
+        .input-bar { padding: 10px 15px calc(15px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; background: #fff; }
+        .m-input { flex: 1; background: #f1f4f6; border: 1px solid var(--border); border-radius: 20px; padding: 12px 15px; outline: none; font-size: 16px; }
+        
+        .h-btn { font-size: 20px; color: var(--v-blue); cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; }
+        .h-btn:active { background: #f0faff; transform: scale(0.85); }
+
+        .media-file { max-width: 100%; border-radius: 12px; display: block; margin-bottom: 5px; }
+        .dl-btn { font-size: 11px; text-decoration: none; color: inherit; opacity: 0.7; display: block; text-align: right; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2); }
+        .in .dl-btn { border-top: 1px solid var(--border); }
+
+        #login-screen { position: fixed; inset: 0; background: #fff; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
     </style>
 </head>
 <body>
 
-    <div id="auth-screen">
-        <div class="auth-card">
-            <div class="v-logo-big">V Vertical</div>
-            <div id="auth-form">
-                <input type="text" id="user-nick" class="m-input" placeholder="Ник" style="width:100%; margin-bottom:15px; box-sizing:border-box;">
-                <input type="email" id="user-email" class="m-input" placeholder="Email" style="width:100%; margin-bottom:20px; box-sizing:border-box;">
-                <button class="btn-main" onclick="processAuth()">ВОЙТИ</button>
-            </div>
-            <div id="auth-status" style="display:none;">
-                <h2 style="color:var(--v-blue)">ИНФОРМАЦИЯ ОДОБРЕНА</h2>
-                <i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--v-blue); margin-top:15px;"></i>
-            </div>
-        </div>
+    <div id="login-screen">
+        <h2 style="color:var(--v-blue)">Vertical Infinity</h2>
+        <input type="text" id="user-nick" class="m-input" placeholder="Ваш ник..." style="width:100%; margin-bottom:15px; text-align:center;">
+        <button onclick="saveLogin()" style="background:var(--v-blue); color:#fff; border:none; padding:15px; border-radius:25px; width:100%; font-weight:bold; cursor:pointer;">Войти</button>
     </div>
 
     <div class="app-wrap">
-        <div class="chat-area">
-            <div class="chat-header">
-                <div><b id="chat-title">Vertical Infinity</b><br><small style="color:green">● онлайн</small></div>
-                <div style="display:flex; gap:12px;">
-                    <i class="fa-solid fa-video h-btn" onclick="startVideo()"></i>
-                    <i class="fa-solid fa-phone h-btn" onclick="playSfx('call')"></i>
-                    <i class="fa-solid fa-xmark h-btn" style="color:red" onclick="location.href='feed.html'"></i>
-                </div>
+        <div class="chat-header">
+            <div class="header-left">
+                <b id="chat-with" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Ник собеседника</b>
+                <small id="my-name" style="color:green"></small>
             </div>
-            <div id="video-overlay" onclick="this.classList.toggle('fullscreen')">
-                <video id="v-stream" autoplay muted playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+            <div class="header-right">
+                <i class="fa-solid fa-phone h-btn" onclick="alert('Вызов...')"></i>
+                <i class="fa-solid fa-video h-btn" onclick="alert('Видеосвязь...')"></i>
+                <i class="fa-solid fa-magnifying-glass h-btn" onclick="setFriend()"></i>
+                <i class="fa-solid fa-door-open h-btn" style="color:#ff4b4b" onclick="logout()"></i>
             </div>
-            <div class="messages" id="box"></div>
-            <div class="input-bar">
-                <i class="fa-solid fa-paperclip h-btn"></i>
-                <input type="text" id="msg" class="m-input" placeholder="Сообщение...">
-                <i class="fa-solid fa-paper-plane h-btn" onclick="send()"></i>
-            </div>
+        </div>
+
+        <div class="messages" id="box"></div>
+
+        <div class="input-bar">
+            <i class="fa-solid fa-paperclip h-btn" onclick="document.getElementById('file-input').click()"></i>
+            <input type="file" id="file-input" style="display:none" onchange="upFile(this)">
+            <input type="text" id="msg" class="m-input" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendMsg()">
+            <i class="fa-solid fa-paper-plane h-btn" onclick="sendMsg()"></i>
         </div>
     </div>
 
 <script>
-    const sfx = {
-        msg: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
-        call: new Audio('https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3')
-    };
+    // Подключение к серверу (укажите ваш IP после настройки server.js)
+    const socket = io('http://ВАШ_IP:3000'); 
+    let myNick = localStorage.getItem('vi_nick');
 
-    function playSfx(type) { sfx[type].play().catch(()=>{}); }
-
-    // Проверка сохраненного пользователя
-    window.onload = () => {
-        const savedNick = localStorage.getItem('v-nick');
-        if(savedNick) {
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('chat-title').innerText = "Vertical: " + savedNick;
-        }
-    };
-
-    function processAuth() {
-        const nick = document.getElementById('user-nick').value;
-        const email = document.getElementById('user-email').value;
-        if(!nick || !email) return alert("Заполните поля");
-
-        localStorage.setItem('v-nick', nick);
-        document.getElementById('auth-form').style.display = 'none';
-        document.getElementById('auth-status').style.display = 'block';
-
-        setTimeout(() => {
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('chat-title').innerText = "Vertical: " + nick;
-        }, 1500);
+    if(myNick) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('my-name').innerText = 'Вы: @' + myNick;
+        socket.emit('join', myNick);
     }
 
-    function send() {
-        const m = document.getElementById('msg');
-        if(!m.value) return;
-        playSfx('msg');
-        document.getElementById('box').innerHTML += '<div class="bubble out">' + m.value + '</div>';
-        m.value = '';
-        document.getElementById('box').scrollTop = document.getElementById('box').scrollHeight;
+    function saveLogin() {
+        const n = document.getElementById('user-nick').value.trim();
+        if(n) { localStorage.setItem('vi_nick', n); location.reload(); }
     }
 
-    function startVideo() {
-        const vo = document.getElementById('video-overlay');
-        vo.style.display = (vo.style.display === 'none' || !vo.style.display) ? 'block' : 'none';
-        if(vo.style.display === 'block') {
-            navigator.mediaDevices.getUserMedia({video:true}).then(s => {
-                document.getElementById('v-stream').srcObject = s;
-            });
-        }
+    function setFriend() {
+        const f = prompt("Кому пишем? (Введите ник друга):");
+        if(f) document.getElementById('chat-with').innerText = f;
     }
 
-    window.visualViewport.addEventListener('resize', () => {
-        document.body.style.height = window.visualViewport.height + 'px';
+    socket.on('receive_msg', (data) => {
+        append(data.html, 'in', data.id);
     });
+
+    function sendMsg() {
+        const m = document.getElementById('msg');
+        const friend = document.getElementById('chat-with').innerText;
+        if(!m.value.trim() || friend === 'Ник собеседника') {
+            if(friend === 'Ник собеседника') alert('Сначала выберите собеседника через лупу!');
+            return;
+        }
+        
+        const id = 'm' + Date.now();
+        append(m.value, 'out', id);
+        socket.emit('send_msg', { to: friend, html: m.value, id: id, from: myNick });
+        m.value = '';
+    }
+
+    function upFile(input) {
+        const file = input.files[0];
+        const friend = document.getElementById('chat-with').innerText;
+        if(!file || friend === 'Ник собеседника') return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const url = e.target.result;
+            let html = '';
+            if(file.type.startsWith('image/')) {
+                html = '<img src="'+url+'" class="media-file"><a href="'+url+'" download="vi_photo" class="dl-btn"><i class="fa-solid fa-download"></i> Сохранить</a>';
+            } else if(file.type.startsWith('video/')) {
+                html = '<video src="'+url+'" controls class="media-file"></video><a href="'+url+'" download="vi_video" class="dl-btn"><i class="fa-solid fa-download"></i> Сохранить</a>';
+            }
+            
+            const id = 'f' + Date.now();
+            append(html, 'out', id);
+            socket.emit('send_msg', { to: friend, html: html, id: id, from: myNick });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function append(html, type, id) {
+        const b = document.getElementById('box');
+        const d = document.createElement('div');
+        d.className = 'bubble ' + type;
+        d.id = id;
+        d.innerHTML = html;
+        
+        // Удаление при нажатии
+        d.onclick = () => { 
+            if(confirm("Удалить это сообщение у себя?")) d.remove(); 
+        };
+        
+        b.appendChild(d);
+        b.scrollTop = b.scrollHeight;
+    }
+
+    function logout() { if(confirm("Выйти из аккаунта?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
+
+sudo chattr +i /var/www/visa-point/public/chat.html
