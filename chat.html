@@ -3,167 +3,128 @@ root@ubuntu-4gb-hel1-1:/var/www/visa-point# cat /var/www/visa-point/public/chat.
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <title>Vertical Pro | Live Cloud</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3616/3616215.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
-    
+    <title>Vertical Infinity</title>
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --ios-blue: #007aff; --ios-green: #34c759; --ios-red: #ff3b30; --bg: #000; --glass: rgba(20, 20, 20, 0.9); --border: rgba(255, 255, 255, 0.15); }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; overflow: hidden; position: fixed; }
-        .main-screen { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; }
-        #remote-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
-        #local-video { position: absolute; top: 70px; right: 15px; width: 100px; height: 150px; border-radius: 15px; border: 1px solid var(--border); object-fit: cover; z-index: 100; transform: scaleX(-1); background: #111; }
-        .dynamic-island { position: absolute; top: 15px; left: 0; width: 100%; display: flex; justify-content: center; z-index: 110; }
-        .search-box { background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); padding: 8px 15px; border-radius: 25px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; width: 85%; max-width: 350px; }
-        .search-box input { background: transparent; border: none; color: #fff; flex: 1; outline: none; font-size: 14px; }
-        #chat-messages { position: absolute; bottom: 140px; left: 15px; right: 15px; max-height: 25vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; z-index: 105; scrollbar-width: none; pointer-events: none; }
-        .msg { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 8px 14px; border-radius: 18px; font-size: 13px; max-width: 80%; border: 1px solid var(--border); pointer-events: auto; word-wrap: break-word; }
-        .msg.mine { align-self: flex-end; background: var(--ios-blue); border: none; }
-        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--glass); backdrop-filter: blur(30px); border-top: 1px solid var(--border); padding: 15px 0 calc(20px + env(safe-area-inset-bottom)); z-index: 200; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .controls-row { display: flex; justify-content: center; gap: 20px; width: 100%; }
-        .chat-row { width: 90%; max-width: 400px; display: flex; align-items: center; background: rgba(255,255,255,0.1); border-radius: 25px; padding: 5px 15px; border: 1px solid var(--border); }
-        .chat-row input { background: transparent; border: none; color: #fff; flex: 1; padding: 10px 0; outline: none; font-size: 16px; }
-        .btn-ios { width: 50px; height: 50px; border-radius: 50%; border: none; background: rgba(255,255,255,0.1); color: #fff; font-size: 20px; display: flex; align-items: center; justify-content: center; }
-        .btn-call { background: var(--ios-green); width: 60px; border-radius: 20px; }
-        .btn-hangup { background: var(--ios-red); }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
-        .dot.online { background: var(--ios-green); box-shadow: 0 0 10px var(--ios-green); }
-        #login { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
-        .ios-input { width: 100%; max-width: 300px; background: #1c1c1e; border: 1px solid #333; padding: 20px; border-radius: 20px; color: #fff; font-size: 18px; margin-bottom: 15px; text-align: center; outline: none; }
+        :root { --v-blue: #00aff0; --bg: #fdfdfd; --border: #e0e7ed; }
+        body, html { margin: 0; padding: 0; height: 100dvh; width: 100%; background: var(--bg); font-family: 'Segoe UI', Arial, sans-serif; overflow: hidden; display: flex; flex-direction: column; }
+        
+        #auth-screen { position: fixed; inset: 0; background: #fff; z-index: 5000; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .auth-card { width: 85%; max-width: 350px; }
+        .v-logo-big { font-size: 42px; font-weight: bold; color: var(--v-blue); margin-bottom: 30px; }
+        
+        .app-wrap { display: flex; flex: 1; height: 100%; width: 100%; overflow: hidden; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; position: relative; background: #fff; height: 100%; }
+        .chat-header { padding: 10px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fff; }
+        
+        #video-overlay { position: absolute; top: 60px; right: 15px; width: 140px; aspect-ratio: 4/3; background: #000; border-radius: 10px; z-index: 100; border: 2px solid var(--v-blue); display: none; overflow: hidden; }
+        #video-overlay.fullscreen { position: fixed; inset: 0; width: 100vw; height: 100dvh; border: none; border-radius: 0; top: 0; right: 0; z-index: 500; }
+
+        .messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9fbfd; display: flex; flex-direction: column; gap: 10px; }
+        .bubble { max-width: 80%; padding: 10px 14px; border-radius: 15px; font-size: 15px; }
+        .in { align-self: flex-start; background: #fff; border: 1px solid var(--border); }
+        .out { align-self: flex-end; background: var(--v-blue); color: #fff; }
+
+        .input-bar { padding: 10px 15px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; background: #fff; }
+        .m-input { flex: 1; background: #f1f4f6; border: 1px solid var(--border); border-radius: 20px; padding: 10px 15px; outline: none; font-size: 16px; }
+        .h-btn { font-size: 20px; color: var(--v-blue); cursor: pointer; padding: 5px; }
+        .btn-main { width: 100%; background: var(--v-blue); color: #fff; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-<div id="login">
-    <div style="font-size: 60px; margin-bottom: 20px;">👤</div>
-    <h1 style="margin: 0 0 10px 0;">Vertical Pro</h1>
-    <input type="text" id="my-nick" class="ios-input" placeholder="Ваш никнейм">
-    <button onclick="connectCloud()" class="ios-input" style="background:var(--ios-blue); border:none; font-weight:bold;">ВОЙТИ</button>
-</div>
-<div class="main-screen">
-    <div class="dynamic-island">
-        <div class="search-box">
-            <div id="status-dot" class="dot"></div>
-            <input type="text" id="target-nick" placeholder="Ник друга..." oninput="checkFriendStatus()">
-            <button class="btn-ios btn-call" onclick="makeCall()"><i class="fa-solid fa-phone"></i></button>
+
+    <div id="auth-screen">
+        <div class="auth-card">
+            <div class="v-logo-big">V Vertical</div>
+            <div id="auth-form">
+                <input type="text" id="user-nick" class="m-input" placeholder="Ник" style="width:100%; margin-bottom:15px; box-sizing:border-box;">
+                <input type="email" id="user-email" class="m-input" placeholder="Email" style="width:100%; margin-bottom:20px; box-sizing:border-box;">
+                <button class="btn-main" onclick="processAuth()">ВОЙТИ</button>
+            </div>
+            <div id="auth-status" style="display:none;">
+                <h2 style="color:var(--v-blue)">ИНФОРМАЦИЯ ОДОБРЕНА</h2>
+                <i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--v-blue); margin-top:15px;"></i>
+            </div>
         </div>
     </div>
-    <video id="remote-video" autoplay playsinline></video>
-    <video id="local-video" autoplay muted playsinline></video>
-    <div id="chat-messages"></div>
-    <div class="bottom-nav">
-        <div class="controls-row">
-            <button class="btn-ios" onclick="toggleMic(this)"><i class="fa-solid fa-microphone"></i></button>
-            <button class="btn-ios btn-hangup" onclick="location.reload()"><i class="fa-solid fa-phone-slash"></i></button>
-            <button class="btn-ios" onclick="toggleCam(this)"><i class="fa-solid fa-video"></i></button>
-        </div>
-        <div class="chat-row">
-            <input type="text" id="text-msg" placeholder="Сообщение..." onkeypress="if(event.keyCode==13) sendText()">
-            <i class="fa-solid fa-paper-plane" onclick="sendText()" style="color:var(--ios-blue); font-size: 20px;"></i>
+
+    <div class="app-wrap">
+        <div class="chat-area">
+            <div class="chat-header">
+                <div><b id="chat-title">Vertical Infinity</b><br><small style="color:green">● онлайн</small></div>
+                <div style="display:flex; gap:12px;">
+                    <i class="fa-solid fa-video h-btn" onclick="startVideo()"></i>
+                    <i class="fa-solid fa-phone h-btn" onclick="playSfx('call')"></i>
+                    <i class="fa-solid fa-xmark h-btn" style="color:red" onclick="location.href='feed.html'"></i>
+                </div>
+            </div>
+            <div id="video-overlay" onclick="this.classList.toggle('fullscreen')">
+                <video id="v-stream" autoplay muted playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+            </div>
+            <div class="messages" id="box"></div>
+            <div class="input-bar">
+                <i class="fa-solid fa-paperclip h-btn"></i>
+                <input type="text" id="msg" class="m-input" placeholder="Сообщение...">
+                <i class="fa-solid fa-paper-plane h-btn" onclick="send()"></i>
+            </div>
         </div>
     </div>
-</div>
+
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBbHZH3dHhSQ_uslmBhxLC4HqBZHUBKl5g",
-        authDomain: "verticalchat-69a8f.firebaseapp.com",
-        databaseURL: "https://verticalchat-69a8f-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "verticalchat-69a8f",
-        storageBucket: "verticalchat-69a8f.firebasestorage.app",
-        messagingSenderId: "372527972623",
-        appId: "1:372527972623:web:5eec4cfe62586637b37e7a"
+    const sfx = {
+        msg: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
+        call: new Audio('https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3')
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    let myNick = "", localStream, peer, activeChat = null;
-    async function connectCloud() {
-        myNick = document.getElementById('my-nick').value.toLowerCase().trim();
-        if(!myNick) return;
-        try {
-            localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-            document.getElementById('local-video').srcObject = localStream;
-            document.getElementById('login').style.display = 'none';
-            peer = new Peer('vrc-' + myNick);
-            peer.on('open', () => {
-                db.ref('users/' + myNick).set({status: 'online'});
-                db.ref('users/' + myNick).onDisconnect().remove();
-            });
-            peer.on('call', call => {
-                call.answer(localStream);
-                setupChat(call.peer.replace('vrc-', ''));
-                call.on('stream', stream => { document.getElementById('remote-video').srcObject = stream; });
-            });
-        } catch (e) { alert("Включите камеру!"); }
+
+    function playSfx(type) { sfx[type].play().catch(()=>{}); }
+
+    // Проверка сохраненного пользователя
+    window.onload = () => {
+        const savedNick = localStorage.getItem('v-nick');
+        if(savedNick) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('chat-title').innerText = "Vertical: " + savedNick;
+        }
+    };
+
+    function processAuth() {
+        const nick = document.getElementById('user-nick').value;
+        const email = document.getElementById('user-email').value;
+        if(!nick || !email) return alert("Заполните поля");
+
+        localStorage.setItem('v-nick', nick);
+        document.getElementById('auth-form').style.display = 'none';
+        document.getElementById('auth-status').style.display = 'block';
+
+        setTimeout(() => {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('chat-title').innerText = "Vertical: " + nick;
+        }, 1500);
     }
-    function checkFriendStatus() {
-        const target = document.getElementById('target-nick').value.toLowerCase().trim();
-        if(target.length > 2) {
-            db.ref('users/' + target).on('value', (s) => {
-                const d = s.val();
-                document.getElementById('status-dot').className = (d && d.status === 'online') ? 'dot online' : 'dot';
+
+    function send() {
+        const m = document.getElementById('msg');
+        if(!m.value) return;
+        playSfx('msg');
+        document.getElementById('box').innerHTML += '<div class="bubble out">' + m.value + '</div>';
+        m.value = '';
+        document.getElementById('box').scrollTop = document.getElementById('box').scrollHeight;
+    }
+
+    function startVideo() {
+        const vo = document.getElementById('video-overlay');
+        vo.style.display = (vo.style.display === 'none' || !vo.style.display) ? 'block' : 'none';
+        if(vo.style.display === 'block') {
+            navigator.mediaDevices.getUserMedia({video:true}).then(s => {
+                document.getElementById('v-stream').srcObject = s;
             });
         }
     }
-    function makeCall() {
-        const target = document.getElementById('target-nick').value.toLowerCase().trim();
-        if(!target) return;
-        setupChat(target);
-        const call = peer.call('vrc-' + target, localStream);
-        call.on('stream', stream => { document.getElementById('remote-video').srcObject = stream; });
-    }
-    function setupChat(target) {
-        if (activeChat === target) return;
-        activeChat = target;
-        const chatId = [myNick, target].sort().join('_');
-        const chatRef = db.ref('chats/' + chatId);
-        document.getElementById('chat-messages').innerHTML = '';
-        chatRef.limitToLast(30).on('child_added', (snap) => {
-            const d = snap.val();
-            const c = document.getElementById('chat-messages');
-            const div = document.createElement('div');
-            div.className = d.sender === myNick ? 'msg mine' : 'msg';
-            div.innerHTML = `<b>${d.sender}:</b> ${d.text}`;
-            c.appendChild(div);
-            c.scrollTop = c.scrollHeight;
-        });
-        chatRef.on('value', (snap) => {
-            if (snap.numChildren() > 30) {
-                let count = 0;
-                const updates = {};
-                snap.forEach((child) => {
-                    if (count < snap.numChildren() - 30) updates[child.key] = null;
-                    count++;
-                });
-                chatRef.update(updates);
-            }
-        });
-    }
-    function sendText() {
-        const txt = document.getElementById('text-msg').value.trim();
-        const target = document.getElementById('target-nick').value.toLowerCase().trim() || activeChat;
-        if(!txt || !target) return;
-        const chatId = [myNick, target].sort().join('_');
-        db.ref('chats/' + chatId).push({sender: myNick, text: txt, time: Date.now()});
-        document.getElementById('text-msg').value = "";
-    }
-    function toggleMic(btn) {
-        const t = localStream.getAudioTracks()[0];
-        t.enabled = !t.enabled;
-        btn.style.background = t.enabled ? 'rgba(255,255,255,0.1)' : 'var(--ios-red)';
-    }
-    function toggleCam(btn) {
-        const t = localStream.getVideoTracks()[0];
-        t.enabled = !t.enabled;
-        btn.style.background = t.enabled ? 'rgba(255,255,255,0.1)' : 'var(--ios-red)';
-    }
+
+    window.visualViewport.addEventListener('resize', () => {
+        document.body.style.height = window.visualViewport.height + 'px';
+    });
 </script>
 </body>
 </html>
