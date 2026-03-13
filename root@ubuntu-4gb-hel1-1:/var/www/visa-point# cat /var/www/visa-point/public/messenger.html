@@ -2,139 +2,62 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Vertical UA • Secure</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
-        :root {
-            --sab: env(safe-area-inset-bottom, 20px);
-            --sat: env(safe-area-inset-top, 0px);
-        }
+        :root { --sab: env(safe-area-inset-bottom, 20px); --sat: env(safe-area-inset-top, 0px); }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #e6ebee;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+               background-color: #e6ebee; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Шапка с адаптацией под челку */
-        .header {
-            background: #517da2;
-            color: white;
-            padding: calc(15px + var(--sat)) 15px 15px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 10;
-        }
+        .header { background: #517da2; color: white; padding: calc(15px + var(--sat)) 15px 15px;
+                  display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; }
 
-        #messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='60'%3E%3Ctext x='10' y='30' font-family='sans-serif' font-size='8' fill='%23517da2' opacity='0.08'%3EVertical Ukraine%3C/text%3E%3C/svg%3E");
-        }
+        #messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px;
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='60'%3E%3Ctext x='10' y='30' font-family='sans-serif' font-size='8' fill='%23517da2' opacity='0.08'%3EVertical Ukraine%3C/text%3E%3C/svg%3E"); }
 
-        /* Футер адаптированный под жест управления внизу */
-        .footer {
-            background: white;
-            padding: 10px 10px calc(10px + var(--sab));
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-top: 1px solid #ddd;
-        }
+        .footer { background: white; padding: 10px 10px calc(10px + var(--sab)); display: flex; align-items: center;
+                  gap: 10px; border-top: 1px solid #ddd; }
 
-        .input-box {
-            flex: 1;
-            background: #f1f3f5;
-            border-radius: 25px;
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            height: 45px;
-        }
+        .input-box { flex: 1; background: #f1f3f5; border-radius: 25px; display: flex; align-items: center;
+                     padding: 0 15px; height: 45px; }
 
-        input {
-            flex: 1;
-            border: none;
-            background: none;
-            font-size: 16px;
-            outline: none;
-            width: 100%;
-        }
+        input { flex: 1; border: none; background: none; font-size: 16px; outline: none; width: 100%; }
 
-        .bubble {
-            padding: 12px;
-            border-radius: 18px;
-            max-width: 85%;
-            font-size: 15px;
-            position: relative;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            word-wrap: break-word;
-        }
+        .bubble { padding: 12px; border-radius: 18px; max-width: 85%; font-size: 15px; position: relative;
+                  box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word; }
         .sent { align-self: flex-end; background: #effdde; border-bottom-right-radius: 2px; }
         .rcvd { align-self: flex-start; background: white; border-bottom-left-radius: 2px; }
 
-        .msg-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 8px;
-            border-top: 1px solid rgba(0,0,0,0.05);
-            padding-top: 5px;
-        }
+        .msg-actions { display: flex; gap: 15px; margin-top: 8px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 5px; }
         .msg-actions i { cursor: pointer; opacity: 0.5; font-size: 14px; }
-        .rec-active { color: #e74c3c !important; animation: pulse 1s infinite; }
-        @keyframes pulse { 50% { opacity: 0.5; } }
-        
+
         img, video { max-width: 100%; border-radius: 12px; display: block; }
         audio { width: 100%; height: 35px; margin-top: 5px; }
 
-        /* Оверлей звонка */
-        #call-overlay {
-            position: fixed; inset: 0; background: #000;
-            display: none; flex-direction: column;
-            padding-top: calc(10px + var(--sat));
-            padding-bottom: calc(10px + var(--sab));
-            z-index: 9999;
-        }
-        #call-header { color: #fff; padding: 10px 15px; display: flex; justify-content: space-between; font-size: 14px; }
-        #videos-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
-        .remote-video-box { width: 100%; max-height: 260px; background: #111; border-radius: 12px; overflow: hidden; }
-        .remote-video-box video { width: 100%; height: 100%; object-fit: cover; }
-        
-        #localVideoBox {
-            position: fixed; right: 10px; bottom: calc(80px + var(--sab));
-            width: 100px; height: 150px; background: #111;
-            border-radius: 12px; overflow: hidden; display: none; z-index: 10000;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-        #localVideoBox video { width: 100%; height: 100%; object-fit: cover; }
-
+        /* Аудиозвонок */
+        #call-overlay { position: fixed; inset: 0; background: #000; display: none; flex-direction: column;
+                        padding-top: calc(10px + var(--sat)); padding-bottom: calc(10px + var(--sab)); z-index: 9999; color:#fff; }
+        #call-header { padding: 10px 15px; display: flex; justify-content: space-between; font-size: 14px; }
+        #call-body { flex: 1; display:flex; align-items:center; justify-content:center; font-size:18px; }
         #call-controls { display: flex; justify-content: center; gap: 20px; padding: 20px 0; }
-        #call-controls button {
-            width: 55px; height: 55px; border-radius: 50%; border: none;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px; color: #fff; cursor: pointer;
-        }
+        #call-controls button { width: 55px; height: 55px; border-radius: 50%; border: none;
+                                display: flex; align-items: center; justify-content: center;
+                                font-size: 20px; color: #fff; cursor: pointer; }
         .btn-mic { background: #2ecc71; }
-        .btn-cam { background: #3498db; }
         .btn-end { background: #e74c3c; }
-        .btn-off { filter: grayscale(1) opacity(0.5); }
     </style>
 </head>
+
 <body>
 
 <div class="header">
-    <i class="fas fa-arrow-left" onclick="history.back()" style="margin-right:15px;"></i>
+    <i class="fas fa-arrow-left" onclick="history.back()" style="margin-right:15px; cursor:pointer;"></i>
     <div style="flex:1">
         <b id="peer-name">Завантаження...</b><br>
         <small><i class="fas fa-lock" style="font-size: 10px;"></i> Vertical UA Secure</small>
@@ -163,73 +86,68 @@
     </div>
 </div>
 
+<!-- Аудиозвонок -->
 <div id="call-overlay">
     <div id="call-header">
-        <span id="call-title">Звонок</span>
+        <span id="call-title">Аудіодзвінок</span>
         <span id="call-status">Підключення...</span>
     </div>
-    <div id="videos-container"></div>
+    <div id="call-body">
+        <div id="call-peer"></div>
+    </div>
     <div id="call-controls">
         <button id="btn-mic" class="btn-mic"><i class="fas fa-microphone"></i></button>
-        <button id="btn-cam" class="btn-cam"><i class="fas fa-video"></i></button>
         <button id="btn-end" class="btn-end"><i class="fas fa-phone-slash"></i></button>
     </div>
 </div>
 
-<div id="localVideoBox">
-    <video id="localVideo" autoplay muted playsinline></video>
-</div>
-
 <script>
-    const socket = io({ transports: ['websocket'] });
-    const p = new URLSearchParams(window.location.search);
-    const my = p.get('my'); 
-    const to = p.get('to');
-    const room = [my, to].sort().join('-'); // Уникальная комната для двоих
-    
-    document.getElementById('peer-name').innerText = "+" + (to || 'User');
+    const socket = io();
 
-    if (my) socket.emit('join', my.replace(/\D/g, ''));
+    const p = new URLSearchParams(location.search);
+    const my = String(p.get('my'));
+    const to = String(p.get('to'));
+    const room = [my, to].sort().join('-');
 
-    // --- Текстовые сообщения ---
+    document.getElementById('peer-name').innerText = "+" + to;
+
+    socket.emit('join_chat', { my, to });
+
     function sendMsg() {
         const i = document.getElementById('minp');
         if (!i.value.trim()) return;
-        const d = { from: my, to: to, val: i.value, type: 'text', id: Date.now() };
+
+        const d = { from: my, to, val: i.value, type: 'text', id: Date.now() };
         socket.emit('send_msg', d);
         addMsg('sent', d);
         i.value = '';
     }
 
-    // --- Голосовые сообщения ---
     let mediaRec; let chunks = [];
     document.getElementById('mic-btn').onclick = async function () {
         if (!mediaRec || mediaRec.state === "inactive") {
-            try {
-                const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRec = new MediaRecorder(s);
-                chunks = [];
-                mediaRec.ondataavailable = e => chunks.push(e.data);
-                mediaRec.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'audio/mp3' });
-                    const r = new FileReader();
-                    r.onload = (e) => {
-                        const d = { from: my, to: to, val: e.target.result, type: 'audio', id: Date.now() };
-                        socket.emit('send_msg', d);
-                        addMsg('sent', d);
-                    };
-                    r.readAsDataURL(blob);
+            const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRec = new MediaRecorder(s);
+            chunks = [];
+            mediaRec.ondataavailable = e => chunks.push(e.data);
+            mediaRec.onstop = () => {
+                const blob = new Blob(chunks, { type: 'audio/mp3' });
+                const r = new FileReader();
+                r.onload = (e) => {
+                    const d = { from: my, to, val: e.target.result, type: 'audio', id: Date.now() };
+                    socket.emit('send_msg', d);
+                    addMsg('sent', d);
                 };
-                mediaRec.start();
-                this.classList.add('rec-active');
-            } catch (e) { alert("Доступ до мікрофона обмежений"); }
+                r.readAsDataURL(blob);
+            };
+            mediaRec.start();
+            this.classList.add('rec-active');
         } else {
             mediaRec.stop();
             this.classList.remove('rec-active');
         }
     };
 
-    // --- Файлы всех форматов ---
     function handleFile(el) {
         const f = el.files[0]; if (!f) return;
         const r = new FileReader();
@@ -238,7 +156,7 @@
             if (f.type.startsWith('image')) t = 'img';
             else if (f.type.startsWith('video')) t = 'video';
             else if (f.type.startsWith('audio')) t = 'audio';
-            const d = { from: my, to: to, val: e.target.result, name: f.name, type: t, id: Date.now() };
+            const d = { from: my, to, val: e.target.result, name: f.name, type: t, id: Date.now() };
             socket.emit('send_msg', d);
             addMsg('sent', d);
         };
@@ -256,44 +174,99 @@
         else if (d.type === 'img') html = `<img src="${d.val}">`;
         else if (d.type === 'video') html = `<video controls src="${d.val}"></video>`;
         else if (d.type === 'audio') html = `<audio controls src="${d.val}"></audio>`;
-        else html = `<div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-file-alt"></i> ${d.name || 'file'}</div>`;
+        else html = `<div><i class="fas fa-file-alt"></i> ${d.name || 'file'}</div>`;
 
         b.innerHTML = html + `<div class="msg-actions">
-            ${d.type !== 'text' ? `<a href="${d.val}" download="${d.name || 'file'}" style="color:inherit"><i class="fas fa-save"></i></a>` : ''}
+            ${d.type !== 'text' ? `<a href="${d.val}" download="${d.name || 'file'}"><i class="fas fa-save"></i></a>` : ''}
             <i class="fas fa-trash" onclick="document.getElementById('m-${d.id}').remove()"></i>
         </div>`;
+
         m.appendChild(b);
         m.scrollTop = m.scrollHeight;
     }
 
     socket.on('receive_msg', (d) => {
-        if (String(d.from).replace(/\D/g, '') === String(to).replace(/\D/g, '')) addMsg('rcvd', d);
+        const r = [String(d.from), String(d.to)].sort().join('-');
+        if (r === room) addMsg('rcvd', d);
     });
 
-    // --- ВИДЕО ЗВОНКИ (WebRTC) ---
-    let localStream; let peers = {};
+    let localStream;
+    let peerConn;
     const callOverlay = document.getElementById('call-overlay');
-    const localVideo = document.getElementById('localVideo');
+    const callPeer = document.getElementById('call-peer');
+    const callStatus = document.getElementById('call-status');
 
-    async function startCall(video) {
+    async function startAudioCall() {
         callOverlay.style.display = 'flex';
-        document.getElementById('call-title').innerText = video ? "Відеодзвінок" : "Аудіодзвінок";
-        localStream = await navigator.mediaDevices.getUserMedia({ video, audio: true });
-        localVideo.srcObject = localStream;
-        document.getElementById('localVideoBox').style.display = 'block';
+        callPeer.innerText = "+" + to;
+        callStatus.innerText = "Підключення...";
         socket.emit('join_call', { room, user: my });
+
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        createPeer(true);
     }
+
+    function createPeer(isCaller) {
+        peerConn = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+        localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
+
+        peerConn.onicecandidate = (e) => {
+            if (e.candidate) socket.emit('call_ice', { room, candidate: e.candidate });
+        };
+
+        if (isCaller) {
+            peerConn.onnegotiationneeded = async () => {
+                const offer = await peerConn.createOffer();
+                await peerConn.setLocalDescription(offer);
+                socket.emit('call_offer', { room, from: my, offer });
+            };
+        }
+    }
+
+    socket.on('call_offer', async ({ room: r, offer }) => {
+        if (r !== room) return;
+        callOverlay.style.display = 'flex';
+        callPeer.innerText = "+" + to;
+        callStatus.innerText = "Вхідний дзвінок...";
+        if (!localStream) {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
+        createPeer(false);
+        await peerConn.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await peerConn.createAnswer();
+        await peerConn.setLocalDescription(answer);
+        socket.emit('call_answer', { room, from: my, answer });
+        callStatus.innerText = "З'єднано";
+    });
+
+    socket.on('call_answer', async ({ room: r, answer }) => {
+        if (r !== room) return;
+        await peerConn.setRemoteDescription(new RTCSessionDescription(answer));
+        callStatus.innerText = "З'єднано";
+    });
+
+    socket.on('call_ice', async ({ room: r, candidate }) => {
+        if (r !== room) return;
+        try { await peerConn.addIceCandidate(new RTCIceCandidate(candidate)); } catch {}
+    });
+
+    socket.on('call_end', () => endCall());
 
     function endCall() {
-        if(localStream) localStream.getTracks().forEach(t => t.stop());
+        if (peerConn) peerConn.close();
+        if (localStream) localStream.getTracks().forEach(t => t.stop());
         callOverlay.style.display = 'none';
-        document.getElementById('localVideoBox').style.display = 'none';
-        location.reload(); // Простой способ сбросить WebRTC сессию
     }
 
-    document.getElementById('v-call').onclick = () => startCall(true);
-    document.getElementById('a-call').onclick = () => startCall(false);
-    document.getElementById('btn-end').onclick = () => endCall();
+    document.getElementById('a-call').onclick = () => startAudioCall();
+    document.getElementById('btn-end').onclick = () => {
+        socket.emit('call_end', { room, from: my });
+        endCall();
+    };
+
+    document.getElementById('v-call').onclick = () => {
+        location.href = `groupcall.html?my=${encodeURIComponent(my)}&to=${encodeURIComponent(to)}`;
+    };
 
     document.getElementById('minp').onkeypress = (e) => { if (e.key === 'Enter') sendMsg(); };
 </script>
