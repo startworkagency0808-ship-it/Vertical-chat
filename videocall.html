@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Vertical UA • Video Call</title>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        #remoteVideo {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #000;
+        }
+
+        #localVideo {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 28%;
+            max-width: 180px;
+            border-radius: 12px;
+            border: 2px solid #fff;
+            object-fit: cover;
+            background: #000;
+        }
+
+        #controls {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 25px;
+        }
+
+        .btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .btn-mic { background: #2ecc71; }
+        .btn-cam { background: #3498db; }
+        .btn-end { background: #e74c3c; }
+    </style>
+</head>
+
+<body>
+
+<video id="remoteVideo" autoplay playsinline></video>
+<video id="localVideo" autoplay muted playsinline></video>
+
+<div id="controls">
+    <button id="toggleMic" class="btn btn-mic"><i class="fas fa-microphone"></i></button>
+    <button id="toggleCam" class="btn btn-cam"><i class="fas fa-video"></i></button>
+    <button id="endCall" class="btn btn-end"><i class="fas fa-phone-slash"></i></button>
+</div>
+
+<script>
+    const socket = io();
+
+    const p = new URLSearchParams(location.search);
+    const my = p.get('my');
+    const to = p.get('to');
+    const room = [my, to].sort().join('-');
+
+    let localStream = null;
+    let peerConn = null;
+
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+
+    async function startCall() {
+        try {
+            socket.emit('join_call', { room, user: my });
+
+            localStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            });
+
+            localVideo.srcObject = localStream;
+
+            createPeer(true);
+        } catch (e) {
+            console.error('getUserMedia error:', e);
+            alert('Не вдалося отримати доступ до камери/мікрофона.');
+        }
+    }
+
+    function createPeer(isCaller) {
+        if (peerConn) {
+            try { peerConn.close(); } catch {}
+        }
+
+        peerConn = new RTCPeerConnection({
+            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+        });
+
+        localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
+
+        peerConn.onicecandidate = (e) => {
+            if (e.candidate) socket.emit('call_ice', { room, candidate: e.candidate });
+        };
+
+        peerConn.ontrack = (e) => {
+            remoteVideo.srcObject = e.streams[0];
+        };
+
+        if (isCaller) {
+            peerConn.onnegotiationneeded = async () => {
+                const offer = await peerConn.createOffer();
+                await peerConn.setLocalDescription(offer);
+                socket.emit('call_offer', { room, from: my, offer });
+            };
+        }
+    }
+
+    socket.on('call_offer', async ({ room: r, offer }) => {
+        if (r !== room) return;
+
+        if (!localStream) {
+            localStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            });
+            localVideo.srcObject = localStream;
+        }
+
+        createPeer(false);
+
+        await peerConn.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await peerConn.createAnswer();
+        await peerConn.setLocalDescription(answer);
+
+        socket.emit('call_answer', { room, from: my, answer });
+    });
+
+    socket.on('call_answer', async ({ room: r, answer }) => {
+        if (r !== room) return;
+        await peerConn.setRemoteDescription(new RTCSessionDescription(answer));
+    });
+
+    socket.on('call_ice', async ({ room: r, candidate }) => {
+        if (r !== room) return;
+        try {
+            await peerConn.addIceCandidate(new RTCIceCandidate(candidate));
+        } catch {}
+    });
+
+    socket.on('call_end', () => endCall());
+
+    function endCall() {
+        try { peerConn.close(); } catch {}
+        peerConn = null;
+
+        if (localStream) {
+            localStream.getTracks().forEach(t => t.stop());
+        }
+
+        window.location.href = `/messenger.html?my=${my}&to=${to}`;
+    }
+
+    document.getElementById('endCall').onclick = () => {
+        socket.emit('call_end', { room, from: my });
+        endCall();
+    };
+
+    document.getElementById('toggleMic').onclick = () => {
+        const track = localStream.getAudioTracks()[0];
+        track.enabled = !track.enabled;
+    };
+
+    document.getElementById('toggleCam').onclick = () => {
+        const track = localStream.getVideoTracks()[0];
+        track.enabled = !track.enabled;
+    };
+
+    // Запуск WebRTC сразу после загрузки страницы (вызов уже принят)
+    startCall();
+</script>
+
+</body>
+</html>
